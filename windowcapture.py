@@ -2,9 +2,18 @@ import numpy as np
 import win32gui
 import win32ui
 import win32con
+from threading import Thread, Lock
+
 
 class WindowCapture:
     
+    #threading properites 
+    stopped = True
+    lock = None
+    screenshot = None
+
+
+    #properties
     w = 0
     h = 0
     hwnd = None
@@ -16,6 +25,10 @@ class WindowCapture:
     offset_y = 0
 
     def __init__(self, window_name):
+        #thread lock object
+        self.lock = Lock()
+
+        #find game window
         self.hwnd = win32gui.FindWindow(None, window_name)
         if not self.hwnd:
             raise Exception('Window not found: {}'.format(window_name))
@@ -65,3 +78,20 @@ class WindowCapture:
     #try to prevent errors if the game client window is moved
     def get_screen_position(self, position):
         return (position[0] + self.offset_x, position[1] + self.offset_y)
+
+    def run(self):
+        while not self.stopped:
+            #get upadated game image
+            screenshot = self.get_window()
+            #lock thread
+            self.lock.acquire()
+            self.screenshot = screenshot
+            self.lock.release()
+
+    def start(self):
+        self.stopped = False
+        window_capture_thread = Thread(target=self.run)
+        window_capture_thread.start()
+    
+    def stop(self):
+        self.stopped = True
