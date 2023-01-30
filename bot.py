@@ -73,7 +73,7 @@ class RSBot:
         # short pause to let the mouse movement complete and allow
         # time for the tooltip to appear
         sleep(1.250)
-        # confirm limestone tooltip
+        # confirm tooltip
         if self.confirm_tooltip(target_pos):
             found_tree = True
         pyautogui.click()
